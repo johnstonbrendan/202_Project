@@ -7,16 +7,16 @@ function solver
     tspan = linspace(tstart, tend, n);
 
     % initial conditions
-    xInit = [0; 0; 0; 10; 0; 0]; %x, vx, vxdot, z, vz, vzdot
+    xInit = [0; 0; 0; 10; 0; 0]; %x, vx, ax, z, vz, az
 
     [t, out] = ode45(@discODEs, tspan, xInit)
 
     x = out(:,1);
     vx = out(:,2);
-    vxdot = out(:,3);
+    ax = out(:,3);
     z = out(:,4);
     vz = out(:,5);
-    vzdot = out(:,6);
+    az = out(:,6);
 
     
     plot(t, z)
@@ -34,12 +34,15 @@ function ddt = discODEs(t, out)
     rho = 1.225; %density of fliud (NEED UNITS)
     r = 0.137; %radius (m)
     y_velocity = 0; % this is a assumption for now (m/s)
+    
+    % out order is [x, vx, ax, z, vz, az]
+    % ddt order is [vx, ax, jx, vz, az, jz] where jx, jz are jerk of x, z
 
     ddt = zeros(size(out));
     ddt(1) = out(2);
     ddt(2) = out(3);
-    ddt(3) = 0;
+    %ddt(3) = 0;
     ddt(4) = out(5);
     ddt(5) = -g;
-    ddt(6) = 0;
+    %ddt(6) = 0;
 end
