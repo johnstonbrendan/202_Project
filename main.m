@@ -11,9 +11,10 @@ r = 1.0; %radius (m)
 y_velocity = 0; % this is a assumption for now (m/s)
 
 
-syms z(t) x(t) z_velocity(t) x_velocity(t)
-ode1 = diff(z_velocity) == z;
-ode2 = diff(x_velocity) == x;
+syms z(t) x(t) z_velocity(t) x_velocity(t) t X Z Y
+
+ode1 = z_velocity == diff(z);
+ode2 = x_velocity == diff(x);
 ode3 = x_velocity + lift_force(CL0,CLa,alpha,rho,r,velocity(x_velocity,y_velocity,z_velocity))*z_velocity...
         /velocity(x_velocity,y_velocity,z_velocity) - ...
         drag_force(CD0,CDa,alpha,alpha_i,rho,r,velocity(x_velocity,y_velocity,z_velocity))*x_velocity/...
@@ -21,9 +22,8 @@ ode3 = x_velocity + lift_force(CL0,CLa,alpha,rho,r,velocity(x_velocity,y_velocit
 ode4 = z_velocity + lift_force(CL0,CLa,alpha,rho,r,velocity(x_velocity,y_velocity,z_velocity))*x_velocity...
         /velocity(x_velocity,y_velocity,z_velocity) + ...
         drag_force(CD0,CDa,alpha,alpha_i,rho,r,velocity(x_velocity,y_velocity,z_velocity))*z_velocity/...
-        velocity(x_velocity,y_velocity,z_velocity) - m*g == m*diff(x_velocity);
-    
-odes = [ode1;ode2;ode3;ode4];
-S = dsolve(odes);
-S.x
-S.z
+        velocity(x_velocity,y_velocity,z_velocity) - m*g == m*diff(z_velocity);
+  
+[DEVF, Subs] = odeToVectorField(ode1, ode2, ode3, ode4);
+ODEfcn = matlabFunction(DEVF, 'Vars', {t, X, Y})
+[t, X] = ode45(@(t,Y) ODEfcn(t, X, Y), [0:200],[0;2;0;0])
