@@ -1,12 +1,12 @@
-m = 12.0; %mass of frisbee (grams)
+m = 0.175; %mass of frisbee (kg)
 g = 9.81; %gravity m/s^2
-CL0 = 1.0; %coefficient of lift (0)
-CLa = 1.0; %coefficient of lift (alpha)
-CD0 = 1.0; %coefficient of drag (0)
-CDa = 1.0; %coefficient of drag (alpha);
-alpha_i = 1.0; %alpha(diff(x),diff(z)) initial (radians)
-rho = 1.0; %density of fliud (NEED UNITS)
-r = 1.0; %radius (m)
+CL0 = 0.15; %coefficient of lift (0)
+CLa = 1.4; %coefficient of lift (alpha)
+CD0 = 0.08; %coefficient of drag (0)
+CDa = 2.72; %coefficient of drag (alpha);
+alpha_i = 0; %alpha(diff(x),diff(z)) initial (radians)
+rho = 1.225; %density of fliud (NEED UNITS)
+r = 0.137; %radius (m)
 y_velocity = 0; % this is a assumption for now (m/s)
 
 
@@ -22,8 +22,9 @@ ode2 = diff(z, 2) == (diff(z) + lift_force(CL0,CLa,alpha(diff(x),diff(z)),rho,r,
   
 [DEVF, Subs] = odeToVectorField(ode1, ode2);
 ODEfcn = matlabFunction(DEVF, 'Vars', {t, Y});
-[t, X] = ode45(@(t,Y) ODEfcn(t, Y), [0 200],[0;0;0;4]);
+[t, X] = ode45(@(t,Y) ODEfcn(t, Y), [0 100],[0;0;0;4]); %z, dZ, x, dX
 
-plot(t, X)
+plot(t, X(:,1))
+
 
 
