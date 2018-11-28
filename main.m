@@ -12,8 +12,8 @@ y_velocity = 0; % this is a assumption for now (m/s)
 
 
 syms z(t) x(t) z_velocity(t) x_velocity(t)
-ode1 = diff(z_velocity) == z;
-ode2 = diff(x_velocity) == x;
+ode1 = diff(z) == z_velocity;
+ode2 = diff(x) == x_velocity;
 ode3 = x_velocity + lift_force(CL0,CLa,alpha,rho,r,velocity(x_velocity,y_velocity,z_velocity))*z_velocity...
         /velocity(x_velocity,y_velocity,z_velocity) - ...
         drag_force(CD0,CDa,alpha,alpha_i,rho,r,velocity(x_velocity,y_velocity,z_velocity))*x_velocity/...
