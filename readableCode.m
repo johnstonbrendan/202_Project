@@ -18,33 +18,8 @@ function solver
     vy = out(:,4);
     z = out(:,5);
     vz = out(:,6);
-
-    figure('Name','x y z plot')
-    plot3(x, y,z)
-    xlabel('x')
-    ylabel('y')
-    zlabel('z')
-    xlim([0 20])
-    ylim([0 20])
-    zlim([0 20])
-    figure('Name','z t plot')
-    plot(t,z)
-    xlabel('t')
-    ylabel('z')
-    ylim ([0 startHeight])
     
-    figure('Name','x t plot')
-    plot(t,x)
-    xlabel('t')
-    ylabel('x')
-     
-    figure('Name','y t plot')
-    plot(t,y)
-    xlabel('t')
-    ylabel('y')
-    
-    
-    %plot stuff here
+    showPlots(t, x, y, z, vx, vy, vz, startHeight);
 end
 
 function ddt = discODEs(t, out)
@@ -105,3 +80,31 @@ function ddt = discODEs(t, out)
     ddt(5) = vz;
     ddt(6) = (liftZ + dragZ - m*g)/m;
 end
+
+function showPlots(t, x, y, z, vx, vy, vz, startHeight)
+    figure('Name','x y z plot')
+    plot3(x, y,z)
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+    xlim([0 20])
+    ylim([0 20])
+    zlim([0 20])
+    figure('Name','z t plot')
+    plot(t,z)
+    xlabel('t')
+    ylabel('z')
+    ylim ([0 startHeight])
+    
+    figure('Name','x t plot')
+    plot(t,x)
+    xlabel('t')
+    ylabel('x')
+    
+     
+    figure('Name','y t plot')
+    plot(t,y)
+    xlabel('t')
+    ylabel('y')
+end
+    
