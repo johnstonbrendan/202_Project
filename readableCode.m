@@ -58,6 +58,8 @@ function ddt = discODEs(t, out)
     rho = 1.225; %density of fliud (NEED UNITS)
     r = 0.137; %radius (m)
     pitch = 0;
+    roll = -pi/3;
+    yaw = 0;
     y_velocity = 0; % this is a assumption for now (m/s)
     
 
@@ -74,7 +76,8 @@ function ddt = discODEs(t, out)
     p = [x y z];
     v = [vx vy vz]; 
     
-    lift_vect = cross(v, [0 1 0]);
+    
+    lift_vect = cross(v, [0 1 tan(roll)]);
     lift_uvect = lift_vect/norm(lift_vect);
     
     drag_vect = -1*v;
