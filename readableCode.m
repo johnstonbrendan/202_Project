@@ -12,8 +12,9 @@ function solver
     wind_speed = [0 0 -3]; %x,y,z windspeed (m/s)
     throwV = 15;
     pitch = 0*pi/180;
-    xInit = [0;15; 0; 0; startHeight; 0]; %x, vx, y, vy, z, vz, 
-    [t, out] = ode45(@(t, out) discODEs(t, out, pitch, wind_speed), tspan, xInit)
+    xInit = [0;15; 0; 0; startHeight; 0]; %x, vx, y, vy, z, vz
+    Opt = odeset('Events', @detectGround);
+   [t, out] = ode45(@(t, out) discODEs(t, out, pitch, wind_speed), tspan, xInit, Opt)
 
     x = out(:,1) +(t*wind_speed(1));
     vx = out(:,2) + wind_speed(1);
@@ -116,5 +117,12 @@ function showPlots(t, x, y, z, vx, vy, vz, startHeight)
     plot(t,y)
     xlabel('t')
     ylabel('y')
+end
+    
+function [value, isterminal, direction] = detectGround(t, out)
+    tolerance = 0.1;
+    value = (abs(out(5)) < tolerance);
+    isterminal = 1;
+    direction = 0;
 end
     
