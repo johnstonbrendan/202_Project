@@ -2,7 +2,7 @@ function solver
     % time step setup
     tstart = 0;
     tend = 10;
-    tstep = 0.001;
+    tstep = 0.01;
     n = (tend-tstart)/tstep;
     tspan = linspace(tstart, tend, n);
 
@@ -19,7 +19,7 @@ function solver
     az = out(:,6);
 
     
-    plot(t, vx)
+    plot(t, x)
     %plot stuff here
 end
 
