@@ -7,7 +7,7 @@ function solver
     tspan = linspace(tstart, tend, n);
 
     % initial conditions
-    xInit = [0; 10; 0; 10; 0; 0]; %x, vx, ax, z, vz, az
+    xInit = [0; 10; 0; 10; 1; 0]; %x, vx, ax, z, vz, az
 
     [t, out] = ode45(@discODEs, tspan, xInit)
 
@@ -19,7 +19,7 @@ function solver
     az = out(:,6);
 
     
-    plot(t, x)
+    plot(t, z)
     %plot stuff here
 end
 
