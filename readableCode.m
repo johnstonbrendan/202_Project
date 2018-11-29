@@ -44,14 +44,15 @@ function ddt = discODEs(t, out)
     vz = out(5);
     az = out(6); 
     
+    
     ddt = zeros(size(out));
     ddt(1) = vx;
-    ddt(2) = (lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz))*abs(vz)/velocity(vx, y_velocity, vz)...
-        - drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_i, rho, r, velocity(vx, y_velocity, vz))*abs(vx)/velocity(vx, y_velocity, vz))/m;
+    ddt(2) = ((lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz))*-vz)/velocity(vx, y_velocity, vz)...
+        - drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_i, rho, r, velocity(vx, y_velocity, vz))*vx/velocity(vx, y_velocity, vz))/m;
     %ddt(3) = 0;
     ddt(4) = vz;
-    ddt(5) = (lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz))*abs(vx)/velocity(vx, y_velocity, vz) ...
-            + drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_i, rho, r, velocity(vx, y_velocity, vz))*abs(vz)/velocity(vx, y_velocity, vz) ...
+    ddt(5) = (lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz))*vx/velocity(vx, y_velocity, vz) ...
+            + drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_i, rho, r, velocity(vx, y_velocity, vz))*-vz/velocity(vx, y_velocity, vz) ...
             - m*g)/m;
     %ddt(6) = 0;
 end
