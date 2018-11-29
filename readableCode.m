@@ -59,7 +59,6 @@ function ddt = discODEs(t, out)
     r = 0.137; %radius (m)
     pitch = 0;
     roll = -pi/3;
-    yaw = 0;
     y_velocity = 0; % this is a assumption for now (m/s)
     
 
