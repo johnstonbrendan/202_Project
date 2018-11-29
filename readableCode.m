@@ -1,13 +1,15 @@
+
 function solver
+    startHeight = 2;
     % time step setup
     tstart = 0;
-    tend = 10;
+    tend = 4;
     tstep = 0.01;
     n = (tend-tstart)/tstep;
     tspan = linspace(tstart, tend, n);
 
     % initial conditions
-    xInit = [0; 10; 0; 10; 1; 0]; %x, vx, ax, z, vz, az
+    xInit = [0; 14; 0; startHeight; 0; 0]; %x, vx, ax, z, vz, az
 
     [t, out] = ode45(@discODEs, tspan, xInit)
 
@@ -18,8 +20,23 @@ function solver
     vz = out(:,5);
     az = out(:,6);
 
+    figure('Name','x z t plot')
+    plot3(t,x,z)
+    xlabel('t')
+    ylabel('x')
+    zlabel('z')
+    zlim([0 startHeight])
+    figure('Name','z t plot')
+    plot(t,z)
+    xlabel('t')
+    ylabel('z')
+    ylim ([0 startHeight])
     
-    plot(t, z)
+    figure('Name','x t plot')
+    plot(t,x)
+    xlabel('t')
+    ylabel('x')
+    
     %plot stuff here
 end
 
