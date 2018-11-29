@@ -34,7 +34,7 @@ function ddt = discODEs(t, out)
     alpha_0 = -0.0698; %alpha(diff(x),diff(z)) 0 defined based on physcial aspects of frisbee (radians)
     rho = 1.225; %density of fliud (NEED UNITS)
     r = 0.137; %radius (m)
-    pitch = 0;
+    pitch = 10*pi/180;
     roll = -pi/3;
     y_velocity = 0; % this is a assumption for now (m/s)
     
@@ -62,7 +62,7 @@ function ddt = discODEs(t, out)
     lift_force = calc_lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz));
     lift = lift_force*lift_uvect;
     
-    drag_force = calc_drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_i, rho, r, velocity(vx, y_velocity, vz));
+    drag_force = calc_drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_0, rho, r, velocity(vx, y_velocity, vz));
     drag = drag_force*drag_uvect;
     
     liftX = lift(1);
