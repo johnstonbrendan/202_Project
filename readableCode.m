@@ -9,13 +9,15 @@ function solver
     tspan = linspace(tstart, tend, n);
 
     % initial conditions
-    xInit = [0; 3; startHeight; 0]; %x, vx, z, vz, 
+    xInit = [0; 3; 0; 0; startHeight; 0]; %x, vx, y, vy, z, vz, 
     [t, out] = ode45(@discODEs, tspan, xInit)
 
     x = out(:,1);
     vx = out(:,2);
-    z = out(:,3);
-    vz = out(:,4);
+    y = out(:,3);
+    vy = out(:,4);
+    z = out(:,5);
+    vz = out(:,6);
 
     figure('Name','x z t plot')
     plot3(t,x,z)
@@ -33,6 +35,12 @@ function solver
     plot(t,x)
     xlabel('t')
     ylabel('x')
+     
+    figure('Name','y t plot')
+    plot(t,y)
+    xlabel('t')
+    ylabel('y')
+    
     
     %plot stuff here
 end
@@ -53,16 +61,18 @@ function ddt = discODEs(t, out)
     % ddt order is [vx, ax, jx, vz, az, jz] where jx, jz are jerk of x
     x = out(1);
     vx = out(2);
-    z = out(3);
-    vz = out(4);
+    y = out(3);
+    vy = out(4);
+    z = out(5);
+    vz = out(6);
     
     
     ddt = zeros(size(out));
     ddt(1) = vx;
     ddt(2) = ((lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz))*-vz)/velocity(vx, y_velocity, vz)...
         - drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_i, rho, r, velocity(vx, y_velocity, vz))*vx/velocity(vx, y_velocity, vz))/m;
-    ddt(3) = vz;
-    ddt(4) = (lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz))*vx/velocity(vx, y_velocity, vz) ...
+    ddt(5) = vz;
+    ddt(6) = (lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz))*vx/velocity(vx, y_velocity, vz) ...
             + drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_i, rho, r, velocity(vx, y_velocity, vz))*-vz/velocity(vx, y_velocity, vz) ...
             - m*g)/m;
 end
