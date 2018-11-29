@@ -2,31 +2,38 @@
 function solver
     % time step setup
     tstart = 0;
-    tend = 20;
+    tend = 3;
     tstep = 0.001;
     n = (tend-tstart)/tstep;
     tspan = linspace(tstart, tend, n);
 
     % initial conditions
-    startHeight = 0; %m
-    wind_speed_x = 0;%(m/s)
-    wind_speed_z = 0;%(m/s)
+    startHeight = 20; %m
+    wind_speed = [0 0 -3]; %x,y,z windspeed (m/s)
     throwV = 15;
-    pitch = 10*pi/180;
+    pitch = 0*pi/180;
     xInit = [0;15; 0; 0; startHeight; 0]; %x, vx, y, vy, z, vz, 
-    [t, out] = ode45(@(t, out) discODEs(t, out, pitch), tspan, xInit)
+    [t, out] = ode45(@(t, out) discODEs(t, out, pitch, wind_speed), tspan, xInit)
 
-    x = out(:,1) +(t*wind_speed_x);
-    vx = out(:,2) +(wind_speed_x);
-    y = out(:,3);
-    vy = out(:,4);
-    z = out(:,5) +(t*wind_speed_z);
-    vz = out(:,6) +(wind_speed_z);
+    x = out(:,1) +(t*wind_speed(1));
+    vx = out(:,2) + wind_speed(1);
+    y = out(:,3) + (t*wind_speed(2));
+    vy = out(:,4) + wind_speed(2);
+    z = out(:,5) +(t*wind_speed(3));
+    vz = out(:,6) + wind_speed(3);
 
-    showPlots(t, x, y, z, vx, vy, vz, startHeight);
+   % showPlots(t, x, y, z, vx, vy, vz, startHeight);
+   title = ['Windspeed is ',num2str(wind_speed(3)),' in z'];
+   figure('Name',title)
+   plot (t,z);
+   xlabel ('t');
+   ylabel ('z');
+   %ylim ([0 startHeight+4]);
+   %xlim ([0 10]);
+   
 end
 
-function ddt = discODEs(t, out, pitch)
+function ddt = discODEs(t, out, pitch, wind_speed)
     m = 0.175; %mass of frisbee (kg)
     g = 9.81; %gravity m/s^2
     CL0 = 0.15; %coefficient of lift (0)
@@ -51,7 +58,7 @@ function ddt = discODEs(t, out, pitch)
     % frisbee position and velocity vector wrt XYZ
     p = [x y z];
     v = [vx vy vz]; 
-    
+    v = v - wind_speed;
     
     lift_vect = cross(v, [0 1 tan(roll)]);
     lift_uvect = lift_vect/norm(lift_vect);
@@ -92,6 +99,7 @@ function showPlots(t, x, y, z, vx, vy, vz, startHeight)
     xlim([0 20])
     ylim([0 20])
     zlim([0 20])
+    
     figure('Name','z t plot')
     plot(t,z)
     xlabel('t')
