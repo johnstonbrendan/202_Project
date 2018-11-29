@@ -8,11 +8,13 @@ function solver
     tspan = linspace(tstart, tend, n);
 
     % initial conditions
-    startHeight = 2; %m
-    wind_speed_x = 12;%(m/s)
-    wind_speed_z = -7;%(m/s)
-    xInit = [0; 3; 0; 0; startHeight; 0]; %x, vx, y, vy, z, vz, 
-    [t, out] = ode45(@discODEs, tspan, xInit)
+    startHeight = 0; %m
+    wind_speed_x = 0;%(m/s)
+    wind_speed_z = 0;%(m/s)
+    throwV = 15;
+    pitch = 10*pi/180;
+    xInit = [0;15; 0; 0; startHeight; 0]; %x, vx, y, vy, z, vz, 
+    [t, out] = ode45(@(t, out) discODEs(t, out, pitch), tspan, xInit)
 
     x = out(:,1) +(t*wind_speed_x);
     vx = out(:,2) +(wind_speed_x);
@@ -24,7 +26,7 @@ function solver
     showPlots(t, x, y, z, vx, vy, vz, startHeight);
 end
 
-function ddt = discODEs(t, out)
+function ddt = discODEs(t, out, pitch)
     m = 0.175; %mass of frisbee (kg)
     g = 9.81; %gravity m/s^2
     CL0 = 0.15; %coefficient of lift (0)
@@ -34,9 +36,7 @@ function ddt = discODEs(t, out)
     alpha_0 = -0.0698; %alpha(diff(x),diff(z)) 0 defined based on physcial aspects of frisbee (radians)
     rho = 1.225; %density of fliud (NEED UNITS)
     r = 0.137; %radius (m)
-    pitch = 10*pi/180;
-    roll = -pi/3;
-    y_velocity = 0; % this is a assumption for now (m/s)
+    roll = 0;
     
 
     
@@ -59,10 +59,10 @@ function ddt = discODEs(t, out)
     drag_vect = -1*v;
     drag_uvect = drag_vect/norm(drag_vect);
     
-    lift_force = calc_lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, y_velocity, vz));
+    lift_force = calc_lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, vy, vz));
     lift = lift_force*lift_uvect;
     
-    drag_force = calc_drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_0, rho, r, velocity(vx, y_velocity, vz));
+    drag_force = calc_drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_0, rho, r, velocity(vx, vy, vz));
     drag = drag_force*drag_uvect;
     
     liftX = lift(1);
@@ -96,7 +96,7 @@ function showPlots(t, x, y, z, vx, vy, vz, startHeight)
     plot(t,z)
     xlabel('t')
     ylabel('z')
-    ylim ([0 startHeight])
+    ylim ([0 5])
     
     figure('Name','x t plot')
     plot(t,x)
