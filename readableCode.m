@@ -10,9 +10,10 @@ function solver
     % initial conditions
     startHeight = 2; %m
     wind_speed = [0 0 0]; %x,y,z windspeed (m/s)
-    throwV = 15;
-    spinRate = 20*pi;
-    xInit = [0; throwV; 0; 0; startHeight; 0; 0; 10]; %x, vx, y, vy, z, vz, r, p
+    throwV = 7;
+    initPitch = 10*pi/180;
+    spinRate = 60*pi;
+    xInit = [0; throwV*cos(initPitch); 0; 0; startHeight; throwV*sin(initPitch); 0; initPitch]; %x, vx, y, vy, z, vz, r, p
     Opt = odeset('Events', @detectGround);
     [t, out] = ode45(@(t, out) discODEs(t, out, wind_speed, spinRate), tspan, xInit, Opt)
 
@@ -22,8 +23,8 @@ function solver
     vy = out(:,4) + wind_speed(2);
     z = out(:,5) +(t*wind_speed(3));
     vz = out(:,6) + wind_speed(3);
-    r = out(:, 7); % roll state
-    p = out(:, 8); % pitch state
+    r = out(:, 7).*180/pi; % roll state (degrees)
+    p = out(:, 8).*180/pi; % pitch state (degrees)
 
    showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight);
    
@@ -104,10 +105,10 @@ function ddt = discODEs(t, out, wind_speed, spinRate)
     acPosVectory = acPosVector*sin(nu);
     
     % find negative pitching moment by using sin(angle) as distance
-    pMom = norm(totalBodyzForce * acPosVectory);
+    pMom = -norm((totalBodyzForce * acPosVectory)/globalToBody);
     
     % find rolling moment by using cos(angle) as distance
-    rMom = norm(totalBodyzForce * acPosVectorx);
+    rMom = norm((totalBodyzForce * acPosVectorx)/globalToBody);
     
     ddt = zeros(size(out));
     ddt(1) = vx;
