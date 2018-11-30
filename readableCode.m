@@ -67,18 +67,19 @@ function ddt = discODEs(t, out, wind_speed, spinRate)
     bodyy = (globalToBody*transpose([0 1 0])).';
     bodyz = (globalToBody*transpose([0 0 1])).';
     
+    %Calculate lift and drag unit vector
     lift_vect = cross(v, bodyy);
     lift_uvect = lift_vect/norm(lift_vect);
-    
     drag_vect = -1*v;
     drag_uvect = drag_vect/norm(drag_vect);
     
+    %Calculate lift and drag force
     lift_force = calc_lift_force(CL0, CLa, alpha(vx, vz, p), rho, rd, velocity(vx, vy, vz));
     lift = lift_force*lift_uvect;
-    
     drag_force = calc_drag_force(CD0, CDa, alpha(vx, vz, p), alpha_0, rho, rd, velocity(vx, vy, vz));
     drag = drag_force*drag_uvect;
     
+    %Get lift and drag force components
     liftX = lift(1);
     liftY = lift(2);
     liftZ = lift(3);
@@ -123,44 +124,37 @@ end
 
 function showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight)
     close all
+    %x,y,z plot
     figure('Name','x y z plot')
     plot3(x, y,z)
     xlabel('x')
     ylabel('y')
     zlabel('z')
-
+    %z vs time plot 
     figure('Name','z t plot')
     plot(t,z)
     xlabel('t')
     ylabel('z')
-    ylim ([0 5])
-    
+    %x vs time plot
     figure('Name','x t plot')
     plot(t,x)
     xlabel('t')
     ylabel('x')
-    
-     
+    %y vs time plot
     figure('Name','y t plot')
     plot(t,y)
     xlabel('t')
     ylabel('y')
-    
+    %roll vs time plot
     figure('Name', 'r t plot')
     plot(t, r)
     xlabel('t')
     ylabel('r')
-    
+    %pitch vs time plot
     figure('Name', 'p t plot')
     plot(t, p)
     xlabel('t')
     ylabel('p')
-    
-    %title = ['Windspeed is ',num2str(wind_speed(3)),' in z'];
-   %figure('Name',title)
-   %plot (t,z);
-   %xlabel ('t');
-   %ylabel ('z');
 end
     
 function [value, isterminal, direction] = detectGround(t, out)
@@ -168,4 +162,3 @@ function [value, isterminal, direction] = detectGround(t, out)
     isterminal = 1;
     direction = 0;
 end
-    
