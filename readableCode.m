@@ -1,23 +1,24 @@
-
 function solver
-    % time step setup
-    tstart = 0;
-    tend = 100;
-    tstep = 0.001;
-    n = (tend-tstart)/tstep;
-    tspan = linspace(tstart, tend, n);
-
-    % initial conditions
+    %%%%%%%%% initial conditions %%%%%%%%
     startHeight = 2; %m
     wind_speed = [0 0 0]; %x,y,z windspeed (m/s)
     throwV = 15; % magnitude of the throw velocity (m/s)
     initPitch = 10*pi/180; % pitch of initial throw (rad)
-    initRoll = 0*pi/180;
-    spinRate = 60*pi; % spin throw rate of frisbee (rad/s)
+    initRoll = 0*pi/180; %roll of initial throw (rad)
+    spinRate = 20*pi; % spin throw rate of frisbee (rad/s)
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % time step setup
+    tstart = 0; %seconds
+    tend = 200; %this can be large as the calculation will stop when z = 0
+    tstep = 0.0001;
+    n = (tend-tstart)/tstep;
+    tspan = linspace(tstart, tend, n);
+
     
     xInit = [0; throwV*cos(initPitch); 0; 0; startHeight; throwV*sin(initPitch); initRoll; initPitch]; %x, vx, y, vy, z, vz, r, p
     Opt = odeset('Events', @detectGround);
-    [t, out] = ode45(@(t, out) discODEs(t, out, wind_speed, spinRate), tspan, xInit, Opt)
+    [t, out] = ode45(@(t, out) discODEs(t, out, wind_speed, spinRate), tspan, xInit, Opt);
 
     x = out(:,1) +(t*wind_speed(1));
     vx = out(:,2) + wind_speed(1);
@@ -99,7 +100,7 @@ function ddt = discODEs(t, out, wind_speed, spinRate)
     totalBodyzForce = norm(liftBodyz + dragBodyz);
     
     % project v vector onto plane
-    acDirVector = (v - (dot(v, bodyz)/(norm(bodyz))^2)*bodyz)
+    acDirVector = (v - (dot(v, bodyz)/(norm(bodyz))^2)*bodyz);
     acPosVector = 0.12*rd*2*acDirVector/norm(acDirVector);
     
     % use scalar dot product formula to find angle to bodyx axis
@@ -127,38 +128,43 @@ function ddt = discODEs(t, out, wind_speed, spinRate)
 end
 
 function showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight)
-    close all
+    close all;
     %x,y,z plot
-    figure('Name','x y z plot')
-    plot3(x, y,z)
-    xlabel('x')
-    ylabel('y')
-    zlabel('z')
+    figure('Name','x y z plot');
+    plot3(x, y,z);
+    x_limit = xlim();
+    y_limit = ylim();
+    z_limit = zlim();
+    max_lim = max([z_limit(2) y_limit(2) x_limit(2)]);
+    axis([0 max_lim 0 max_lim 0 max_lim]);
+    xlabel('x (m)');
+    ylabel('y (m)');
+    zlabel('z (m)');
     %z vs time plot 
-    figure('Name','z t plot')
-    plot(t,z)
-    xlabel('t')
-    ylabel('z')
+    figure('Name','z t plot');
+    plot(t,z);
+    xlabel('t (s)');
+    ylabel('z (m)');
     %x vs time plot
-    figure('Name','x t plot')
-    plot(t,x)
-    xlabel('t')
-    ylabel('x')
+    figure('Name','x t plot');
+    plot(t,x);
+    xlabel('t (s)');
+    ylabel('x (m)');
     %y vs time plot
-    figure('Name','y t plot')
-    plot(t,y)
-    xlabel('t')
-    ylabel('y')
+    figure('Name','y t plot');
+    plot(t,y);
+    xlabel('t (s)');
+    ylabel('y (m)');
     %roll vs time plot
-    figure('Name', 'r t plot')
-    plot(t, r)
-    xlabel('t')
-    ylabel('r')
+    figure('Name', 'r t plot');
+    plot(t, r);
+    xlabel('t (s)');
+    ylabel('roll (rad)');
     %pitch vs time plot
-    figure('Name', 'p t plot')
-    plot(t, p)
-    xlabel('t')
-    ylabel('p')
+    figure('Name', 'p t plot');
+    plot(t, p);
+    xlabel('t (s)');
+    ylabel('pitch (rad)');
 end
     
 function [value, isterminal, direction] = detectGround(t, out)
