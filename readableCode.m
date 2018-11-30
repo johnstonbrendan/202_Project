@@ -2,13 +2,13 @@
 function solver
     % time step setup
     tstart = 0;
-    tend = 30;
+    tend = 100;
     tstep = 0.001;
     n = (tend-tstart)/tstep;
     tspan = linspace(tstart, tend, n);
 
     % initial conditions
-    startHeight = 20; %m
+    startHeight = 2; %m
     wind_speed = [0 0 0]; %x,y,z windspeed (m/s)
     throwV = 15;
     spinRate = 20*pi;
@@ -121,7 +121,7 @@ function ddt = discODEs(t, out, wind_speed, spinRate)
 end
 
 function showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight)
-   
+    close all
     figure('Name','x y z plot')
     plot3(x, y,z)
     xlabel('x')
@@ -166,8 +166,7 @@ function showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight)
 end
     
 function [value, isterminal, direction] = detectGround(t, out)
-    tolerance = 0.1;
-    value = (abs(out(5)) < tolerance);
+    value = (out(5) < 0);
     isterminal = 1;
     direction = 0;
 end
