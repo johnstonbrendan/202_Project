@@ -10,10 +10,10 @@ function solver
     % initial conditions
     startHeight = 2; %m
     wind_speed = [0 0 0]; %x,y,z windspeed (m/s)
-    throwV = 7;
+    throwV = 15;
     initPitch = 10*pi/180;
     spinRate = 60*pi;
-    xInit = [0; throwV*cos(initPitch); 0; 0; startHeight; throwV*sin(initPitch); 0; initPitch]; %x, vx, y, vy, z, vz, r, p
+    xInit = [0; throwV*cos(initPitch); 0; 0; startHeight; throwV*sin(initPitch); 0*pi/180; initPitch]; %x, vx, y, vy, z, vz, r, p
     Opt = odeset('Events', @detectGround);
     [t, out] = ode45(@(t, out) discODEs(t, out, wind_speed, spinRate), tspan, xInit, Opt)
 
@@ -128,10 +128,7 @@ function showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight)
     xlabel('x')
     ylabel('y')
     zlabel('z')
-    xlim([0 20])
-    ylim([0 20])
-    zlim([0 20])
-    
+
     figure('Name','z t plot')
     plot(t,z)
     xlabel('t')
