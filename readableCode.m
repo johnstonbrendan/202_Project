@@ -10,10 +10,12 @@ function solver
     % initial conditions
     startHeight = 2; %m
     wind_speed = [0 0 0]; %x,y,z windspeed (m/s)
-    throwV = 15;
-    initPitch = 10*pi/180;
-    spinRate = 60*pi;
-    xInit = [0; throwV*cos(initPitch); 0; 0; startHeight; throwV*sin(initPitch); 0*pi/180; initPitch]; %x, vx, y, vy, z, vz, r, p
+    throwV = 15; % magnitude of the throw velocity (m/s)
+    initPitch = 10*pi/180; % pitch of initial throw (rad)
+    initRoll = 0*pi/180;
+    spinRate = 60*pi; % spin throw rate of frisbee (rad/s)
+    
+    xInit = [0; throwV*cos(initPitch); 0; 0; startHeight; throwV*sin(initPitch); initRoll; initPitch]; %x, vx, y, vy, z, vz, r, p
     Opt = odeset('Events', @detectGround);
     [t, out] = ode45(@(t, out) discODEs(t, out, wind_speed, spinRate), tspan, xInit, Opt)
 
@@ -28,26 +30,23 @@ function solver
 
    showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight);
    
-   %ylim ([0 startHeight+4]);
-   %xlim ([0 10]);
-   
 end
 
 function ddt = discODEs(t, out, wind_speed, spinRate)
     m = 0.175; %mass of frisbee (kg)
-    g = 9.81; %gravity m/s^2
+    g = 9.81; %gravity (m/s^2)
     CL0 = 0.15; %coefficient of lift (0)
     CLa = 1.4; %coefficient of lift (alpha)
     CD0 = 0.08; %coefficient of drag (0)
     CDa = 2.72; %coefficient of drag (alpha);
-    alpha_0 = -0.0698; %alpha(diff(x),diff(z)) 0 defined based on physcial aspects of frisbee (radians)
-    rho = 1.225; %density of fliud (NEED UNITS)
+    alpha_0 = -0.0698; % 0 defined based on physcial aspects of frisbee (radians)
+    rho = 1.225; %density of fliud (kg/m^3)
     rd = 0.137; %radius (m)
-    Iz = 1/8*m*(rd*2)^2;
+    Iz = 1/8*m*(rd*2)^2; % kg(m^2)
     
 
     
-    % ddt order is [vx, ax, jx, vz, az, jz] where jx, jz are jerk of x
+    % ddt order is [vx, ax, vy, ay, vz, az, rdot, pdot] 
     x = out(1);
     vx = out(2);
     y = out(3);
@@ -62,7 +61,10 @@ function ddt = discODEs(t, out, wind_speed, spinRate)
     v = [vx vy vz]; 
     v = v - wind_speed; % find free stream velocity, v frisbee rel to air
     
+    % global to body transformation matrix
     globalToBody = transpose([1 0 0;0 cos(r) -sin(r);0 sin(r) cos(r)]*[cos(p) 0 sin(p); 0 1 0; -sin(p) 0 cos(p)]);
+    
+    % transform global axes to body axes
     bodyx = (globalToBody*transpose([1 0 0])).';
     bodyy = (globalToBody*transpose([0 1 0])).';
     bodyz = (globalToBody*transpose([0 0 1])).';
@@ -90,6 +92,8 @@ function ddt = discODEs(t, out, wind_speed, spinRate)
     dragZ = drag(3);
     dragBodyz = (dot(drag,bodyz)/norm(bodyz)^2)*bodyz;
     % X = [1 0 0], Y = [0 1 0], Z = [0 0 1]
+    
+    % PITCHING MOMENT SECTION % 
     
     % assume clockwise rotation
     totalBodyzForce = norm(liftBodyz + dragBodyz);
