@@ -2,19 +2,19 @@
 function solver
     % time step setup
     tstart = 0;
-    tend = 3;
+    tend = 30;
     tstep = 0.001;
     n = (tend-tstart)/tstep;
     tspan = linspace(tstart, tend, n);
 
     % initial conditions
     startHeight = 20; %m
-    wind_speed = [0 0 -3]; %x,y,z windspeed (m/s)
+    wind_speed = [0 0 0]; %x,y,z windspeed (m/s)
     throwV = 15;
-    pitch = 0*pi/180;
-    xInit = [0;15; 0; 0; startHeight; 0]; %x, vx, y, vy, z, vz
+    spinRate = 20*pi;
+    xInit = [0; throwV; 0; 0; startHeight; 0; 0; 10]; %x, vx, y, vy, z, vz, r, p
     Opt = odeset('Events', @detectGround);
-    [t, out] = ode45(@(t, out) discODEs(t, out, pitch, wind_speed), tspan, xInit, Opt)
+    [t, out] = ode45(@(t, out) discODEs(t, out, wind_speed, spinRate), tspan, xInit, Opt)
 
     x = out(:,1) +(t*wind_speed(1));
     vx = out(:,2) + wind_speed(1);
@@ -22,19 +22,17 @@ function solver
     vy = out(:,4) + wind_speed(2);
     z = out(:,5) +(t*wind_speed(3));
     vz = out(:,6) + wind_speed(3);
+    r = out(:, 7); % roll state
+    p = out(:, 8); % pitch state
 
-   % showPlots(t, x, y, z, vx, vy, vz, startHeight);
-   title = ['Windspeed is ',num2str(wind_speed(3)),' in z'];
-   figure('Name',title)
-   plot (t,z);
-   xlabel ('t');
-   ylabel ('z');
+   showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight);
+   
    %ylim ([0 startHeight+4]);
    %xlim ([0 10]);
    
 end
 
-function ddt = discODEs(t, out, pitch, wind_speed)
+function ddt = discODEs(t, out, wind_speed, spinRate)
     m = 0.175; %mass of frisbee (kg)
     g = 9.81; %gravity m/s^2
     CL0 = 0.15; %coefficient of lift (0)
@@ -43,8 +41,8 @@ function ddt = discODEs(t, out, pitch, wind_speed)
     CDa = 2.72; %coefficient of drag (alpha);
     alpha_0 = -0.0698; %alpha(diff(x),diff(z)) 0 defined based on physcial aspects of frisbee (radians)
     rho = 1.225; %density of fliud (NEED UNITS)
-    r = 0.137; %radius (m)
-    roll = 0;
+    rd = 0.137; %radius (m)
+    Iz = 1/8*m*(rd*2)^2;
     
 
     
@@ -55,32 +53,61 @@ function ddt = discODEs(t, out, pitch, wind_speed)
     vy = out(4);
     z = out(5);
     vz = out(6);
+    r = out(7);
+    p = out(8);
     
     % frisbee position and velocity vector wrt XYZ
-    p = [x y z];
+    pos = [x y z];
     v = [vx vy vz]; 
-    v = v - wind_speed;
+    v = v - wind_speed; % find free stream velocity, v frisbee rel to air
     
-    lift_vect = cross(v, [0 1 tan(roll)]);
+    globalToBody = transpose([1 0 0;0 cos(r) -sin(r);0 sin(r) cos(r)]*[cos(p) 0 sin(p); 0 1 0; -sin(p) 0 cos(p)]);
+    bodyx = (globalToBody*transpose([1 0 0])).';
+    bodyy = (globalToBody*transpose([0 1 0])).';
+    bodyz = (globalToBody*transpose([0 0 1])).';
+    
+    lift_vect = cross(v, bodyy);
     lift_uvect = lift_vect/norm(lift_vect);
     
     drag_vect = -1*v;
     drag_uvect = drag_vect/norm(drag_vect);
     
-    lift_force = calc_lift_force(CL0, CLa, alpha(vx, vz, pitch), rho, r, velocity(vx, vy, vz));
+    lift_force = calc_lift_force(CL0, CLa, alpha(vx, vz, p), rho, rd, velocity(vx, vy, vz));
     lift = lift_force*lift_uvect;
     
-    drag_force = calc_drag_force(CD0, CDa, alpha(vx, vz, pitch), alpha_0, rho, r, velocity(vx, vy, vz));
+    drag_force = calc_drag_force(CD0, CDa, alpha(vx, vz, p), alpha_0, rho, rd, velocity(vx, vy, vz));
     drag = drag_force*drag_uvect;
     
     liftX = lift(1);
     liftY = lift(2);
     liftZ = lift(3);
+    liftBodyz = (dot(lift,bodyz)/(norm(bodyz))^2)*bodyz;
     
     dragX = drag(1);
     dragY = drag(2);
     dragZ = drag(3);
+    dragBodyz = (dot(drag,bodyz)/norm(bodyz)^2)*bodyz;
     % X = [1 0 0], Y = [0 1 0], Z = [0 0 1]
+    
+    % assume clockwise rotation
+    totalBodyzForce = norm(liftBodyz + dragBodyz);
+    
+    % project v vector onto plane
+    acDirVector = (v - (dot(v, bodyz)/(norm(bodyz))^2)*bodyz)
+    acPosVector = 0.12*rd*2*acDirVector/norm(acDirVector);
+    
+    % use scalar dot product formula to find angle to bodyx axis
+    nu = acos(dot(bodyx, acPosVector))/(norm(bodyx)*norm(acPosVector));
+    
+    % find components of the position vector to ac on bodyx, bodyy axis
+    acPosVectorx = acPosVector*cos(nu);
+    acPosVectory = acPosVector*sin(nu);
+    
+    % find negative pitching moment by using sin(angle) as distance
+    pMom = norm(totalBodyzForce * acPosVectory);
+    
+    % find rolling moment by using cos(angle) as distance
+    rMom = norm(totalBodyzForce * acPosVectorx);
     
     ddt = zeros(size(out));
     ddt(1) = vx;
@@ -89,9 +116,12 @@ function ddt = discODEs(t, out, pitch, wind_speed)
     ddt(4) = (liftY + dragY)/m;
     ddt(5) = vz;
     ddt(6) = (liftZ + dragZ - m*g)/m;
+    ddt(7) = 2*rMom/(Iz * spinRate);
+    ddt(8) = 2*pMom/(Iz * spinRate);
 end
 
-function showPlots(t, x, y, z, vx, vy, vz, startHeight)
+function showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight)
+   
     figure('Name','x y z plot')
     plot3(x, y,z)
     xlabel('x')
@@ -117,6 +147,22 @@ function showPlots(t, x, y, z, vx, vy, vz, startHeight)
     plot(t,y)
     xlabel('t')
     ylabel('y')
+    
+    figure('Name', 'r t plot')
+    plot(t, r)
+    xlabel('t')
+    ylabel('r')
+    
+    figure('Name', 'p t plot')
+    plot(t, p)
+    xlabel('t')
+    ylabel('p')
+    
+    %title = ['Windspeed is ',num2str(wind_speed(3)),' in z'];
+   %figure('Name',title)
+   %plot (t,z);
+   %xlabel ('t');
+   %ylabel ('z');
 end
     
 function [value, isterminal, direction] = detectGround(t, out)
