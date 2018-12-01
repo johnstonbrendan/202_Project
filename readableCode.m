@@ -2,10 +2,10 @@ function solver
     %%%%%%%%% initial conditions %%%%%%%%
     startHeight = 2; %m
     wind_speed = [0 0 0]; %x,y,z windspeed (m/s)
-    throwV = 15; % magnitude of the throw velocity (m/s)
-    initPitch = 10*pi/180; % pitch of initial throw (rad)
+    throwV = 14; % magnitude of the throw velocity (m/s)
+    initPitch =10*pi/180; % pitch of initial throw (rad)
     initRoll = 0*pi/180; %roll of initial throw (rad)
-    spinRate = 20*pi; % spin throw rate of frisbee (rad/s)
+    spinRate =37; % spin throw rate of frisbee (rad/s)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % time step setup
@@ -159,12 +159,12 @@ function showPlots(t, x, y, z, vx, vy, vz, r, p, startHeight)
     figure('Name', 'r t plot');
     plot(t, r);
     xlabel('t (s)');
-    ylabel('roll (rad)');
+    ylabel('roll (degrees)');
     %pitch vs time plot
     figure('Name', 'p t plot');
     plot(t, p);
     xlabel('t (s)');
-    ylabel('pitch (rad)');
+    ylabel('pitch (degrees)');
 end
     
 function [value, isterminal, direction] = detectGround(t, out)
